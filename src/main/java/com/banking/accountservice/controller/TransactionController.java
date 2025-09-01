@@ -40,18 +40,32 @@ public class TransactionController {
 
     // Transfer endpoint
     // Transfer money between accounts using path variables
+//    @PostMapping("/transfer/{fromAccountId}/{toAccountId}")
+//    public ResponseEntity<?> transfer(
+//            @PathVariable Long fromAccountId,
+//            @PathVariable Long toAccountId,
+//            @RequestParam Double amount) {
+//        try {
+//            Transaction transaction = transactionService.transfer(fromAccountId, toAccountId, amount);
+//            return ResponseEntity.ok(transaction);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        }
+//    }
+
     @PostMapping("/transfer/{fromAccountId}/{toAccountId}")
     public ResponseEntity<?> transfer(
             @PathVariable Long fromAccountId,
             @PathVariable Long toAccountId,
             @RequestParam Double amount) {
         try {
-            Transaction transaction = transactionService.transfer(fromAccountId, toAccountId, amount);
-            return ResponseEntity.ok(transaction);
+            List<Transaction> transactions = transactionService.transfer(fromAccountId, toAccountId, amount);
+            return ResponseEntity.ok(transactions);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
 
     // Get all transactions of an account

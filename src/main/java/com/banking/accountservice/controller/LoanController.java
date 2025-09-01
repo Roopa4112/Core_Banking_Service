@@ -57,4 +57,24 @@ public class LoanController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @PostMapping("/approve/{loanId}")
+    public ResponseEntity<Loan> approveLoan(
+            @PathVariable Long loanId,
+            @RequestParam Long employeeId) {
+        Loan loan = loanService.approveLoan(loanId, employeeId);
+        return ResponseEntity.ok(loan);
+    }
+
+//    public ResponseEntity<?> approveLoan(
+//            @PathVariable Long loanId,
+//            @RequestParam Long employeeId) {
+//        try {
+//            Loan loan = loanService.approveLoan(loanId, employeeId);
+//            return ResponseEntity.ok(loan);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        }
+//    }
+
 }

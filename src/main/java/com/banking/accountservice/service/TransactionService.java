@@ -56,6 +56,7 @@ public class TransactionService {
 
         // Send Kafka event
         sendTransactionEvent(transaction, "DEPOSIT", "Deposit successful");
+        sendTransactionEvent(transaction, "DEPOSIT", "Deposit successful");
 
         return transaction;
     }
@@ -86,6 +87,7 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
 
         // Send Kafka event
+        sendTransactionEvent(transaction, "WITHDRAW", "Withdraw successful");
         sendTransactionEvent(transaction, "WITHDRAW", "Withdraw successful");
 
         return transaction;
@@ -203,6 +205,9 @@ public class TransactionService {
         transactionRepository.save(creditTx);
 
         // Send Kafka events (helper method)
+        sendTransactionEvent(debitTx, "TRANSFER_OUT", "Transfer to account " + toAccountId);
+        sendTransactionEvent(creditTx, "TRANSFER_IN", "Transfer from account " + fromAccountId);
+
         sendTransactionEvent(debitTx, "TRANSFER_OUT", "Transfer to account " + toAccountId);
         sendTransactionEvent(creditTx, "TRANSFER_IN", "Transfer from account " + fromAccountId);
 

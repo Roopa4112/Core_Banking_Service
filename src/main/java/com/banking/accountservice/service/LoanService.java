@@ -56,8 +56,13 @@ public class LoanService {
 
     // Apply for a new loan
     public Loan applyLoan(Long accountId, String loanType, Double amount, Double interestRate, Integer period) throws Exception {
+       // String url = USER_SERVICE_URL + "/" + account.getUserId();
+
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new Exception("Account not found"));
+
+        String url = USER_SERVICE_URL + "/" + account.getUserId();
+
 
         validateUser(account.getUserId());
 

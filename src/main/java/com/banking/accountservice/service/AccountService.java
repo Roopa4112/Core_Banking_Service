@@ -65,6 +65,7 @@ public class AccountService {
         @SuppressWarnings("unchecked")
         String userEmail = ((Map<String, Object>) userResponse).get("email").toString();
 
+        System.out.println("userEmail: " + userEmail);
         account.setBalance(account.getBalance() != null ? account.getBalance() : 0.0);
 
 
@@ -77,14 +78,16 @@ public class AccountService {
         account.setApproved(false);
         account.setStatus("PENDING");
         account.setCreatedAt(LocalDateTime.now());
-
-        account = accountRepository.save(account);
-
+        System.out.println("Created account with id " + account.getAccountNumber());
+        Account savedaccount = accountRepository.save(account);
+        System.out.println("Saved account with id " + savedaccount.getId());
+        System.out.println("Saved account with id " + savedaccount);
         // Send Kafka event to employee
         AccountCreatedEvent event = new AccountCreatedEvent(
-                account.getId(),
+                savedaccount.getUserId(),
                 userEmail,
-                account.getAccountNumber()
+                savedaccount.getAccountNumber(),
+                savedaccount.getId()
         );
         accountEventProducer.sendAccountCreatedEvent(event);
 
@@ -185,7 +188,11 @@ public Account approveAccount(Long accountId, Long employeeId) {
     }
 
     @SuppressWarnings("unchecked")
-    String employeeRole = ((Map<String, Object>) employeeResponse).get("role").toString();
+    Map<String, Object> employeeMap = (Map<String, Object>) employeeResponse;
+    String employeeRole = employeeMap.get("role").toString();
+    String employeeEmail = employeeMap.get("email").toString();
+    String employeeName = employeeMap.get("name").toString();
+
     if (!"EMPLOYEE".equalsIgnoreCase(employeeRole)) {
         throw new RuntimeException("User is not authorized to approve. Role must be EMPLOYEE.");
     }
@@ -197,8 +204,8 @@ public Account approveAccount(Long accountId, Long employeeId) {
     account.setApprovedByEmployeeId(employeeId);
     account.setStatus("APPROVED");
     account.setApprovedAt(LocalDateTime.now());
-    
-    account = accountRepository.save(account);
+
+    Account savedaccount = accountRepository.save(account);
 
     // Fetch user email for notification
     String urlUser = USER_SERVICE_URL + "/" + account.getUserId();
@@ -208,23 +215,30 @@ public Account approveAccount(Long accountId, Long employeeId) {
 
     // Send Kafka event to notify user
     AccountApprovedEvent userEvent = new AccountApprovedEvent(
-            account.getId(),
+            savedaccount.getId(),
+            savedaccount.getUserId(),
             userEmail,
-            account.getAccountNumber(),
-            "Account approved by employeeId: " + employeeId
+            savedaccount.getAccountNumber(),
+            "Account approved by employeeId: " + employeeId,
+            employeeId.toString(),
+            employeeName
     );
     accountEventProducer.sendAccountApprovedEvent(userEvent);
 
     // Send Kafka event to notify employee
     AccountApprovedEvent employeeEvent = new AccountApprovedEvent(
-            account.getId(),
-            ((Map<String, Object>) employeeResponse).get("email").toString(),
-            account.getAccountNumber(),
-            "You approved account for userId: " + account.getUserId()
+            savedaccount.getId(),
+            savedaccount.getUserId(),
+            employeeEmail,
+            savedaccount.getAccountNumber(),
+            "You approved account for userId: " + account.getUserId(),
+            employeeId.toString(),
+            employeeName
     );
     accountEventProducer.sendAccountApprovedEvent(employeeEvent);
 
     return account;
 }
+
 
 }
